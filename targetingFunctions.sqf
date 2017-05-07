@@ -3,6 +3,7 @@ dzn_fnc_onKeyPress = {
 	if (!alive player || dzn_keyIsDown) exitWith {};
 	private["_key","_shift","_crtl","_alt","_handled"];	
 	_key = _this select 1; 
+	_crtl = _this select 3;
 	_handled = false;
 	
 	switch _key do {
@@ -31,11 +32,31 @@ dzn_fnc_onKeyPress = {
 			dzn_keyIsDown = true;
 			_handled = true;
 		};
+		case 64: {
+			[] spawn dzn_fnc_showAddMagazines;
+			dzn_keyIsDown = true;
+			_handled = true;
+		};
+		case 33: {
+			if (_crtl) then { 
+				call dzn_fnc_loadSingleRound;
+				dzn_keyIsDown = true;
+				_handled = true;
+			};
+		};
 	};
 	
 	[] spawn { sleep 1; dzn_keyIsDown = false; };
 	
 	_handled
+};
+
+dzn_fnc_loadSingleRound = {
+	player setAmmo [currentWeapon player, 1]; 
+	[
+		parseText "<t shadow='2' align='center' font='PuristaBold' size='1.25'>ROUND LOADED</t>"
+		, [.5,.85,1,1], nil, 7, 0.2, 0 
+	] spawn BIS_fnc_textTiles;
 };
 
 dzn_fnc_showMenu = {
@@ -73,6 +94,110 @@ dzn_fnc_showMenu = {
 	] call dzn_fnc_ShowAdvDialog;
 };
 
+dzn_fnc_showAddMagazines = {
+	private _menu = [[0, "HEADER", "ADD MAGAZINES"]];	
+	private _menuLine = 1;
+	addMagazineTypes = [false,false,false];
+	
+	if (primaryWeapon player != "") then {
+		private _listOfMags = getArray(configFile >> "CfgWeapons" >> primaryWeapon player >> "magazines");
+	
+		_menu = _menu + [
+			[_menuLine, "LABEL", format["PRIMARY (%1)", (primaryWeapon player) call dzn_fnc_getItemDisplayName]]
+			,[_menuLine + 1, "LABEL", ""]
+			,[_menuLine + 1, "DROPDOWN", _listOfMags apply { _x call dzn_fnc_getItemDisplayName }, _listOfMags]
+			,[_menuLine + 1, "SLIDER", [0,10,0]]
+			,[_menuLine + 2, "LABEL", ""]
+		];	
+		
+		_menuLine = _menuLine + 3;
+		addMagazineTypes set [0, true];
+	};
+	
+	if (secondaryWeapon player != "") then {
+		private _listOfMags = getArray(configFile >> "CfgWeapons" >> secondaryWeapon player >> "magazines");
+	
+		_menu = _menu + [
+			[_menuLine, "LABEL", format["SECONDARY (%1)", (secondaryWeapon player) call dzn_fnc_getItemDisplayName]]
+			,[_menuLine + 1, "LABEL", ""]
+			,[_menuLine + 1, "DROPDOWN", _listOfMags apply { _x call dzn_fnc_getItemDisplayName }, _listOfMags]
+			,[_menuLine + 1, "SLIDER", [0,10,0]]
+			,[_menuLine + 2, "LABEL", ""]
+		];	
+		
+		_menuLine = _menuLine + 3;
+		addMagazineTypes set [1, true];
+	};
+	
+	if (handgunWeapon player != "") then {
+		private _listOfMags = getArray(configFile >> "CfgWeapons" >> handgunWeapon player >> "magazines");
+	
+		_menu = _menu + [
+			[_menuLine, "LABEL", format["HANDGUN (%1)", (handgunWeapon player) call dzn_fnc_getItemDisplayName]]
+			,[_menuLine + 1, "LABEL", ""]
+			,[_menuLine + 1, "DROPDOWN", _listOfMags apply { _x call dzn_fnc_getItemDisplayName }, _listOfMags]
+			,[_menuLine + 1, "SLIDER", [0,10,0]]
+			,[_menuLine + 2, "LABEL", ""]
+		];	
+		
+		_menuLine = _menuLine + 3;
+		addMagazineTypes set [2, true];
+	};
+	
+	_menu = _menu + [
+		[_menuLine,"LABEL", ""]
+		,[_menuLine + 1,"BUTTON", "CANCEL", { closeDialog 2; }]
+		,[_menuLine + 1,"LABEL", ""]
+		,[_menuLine + 1,"LABEL", ""]
+		,[_menuLine + 1,"BUTTON", "ADD", { 
+			_this spawn dzn_fnc_addMagazines;
+			closeDIalog 2; 
+		}]
+	];
+	
+	if (_menuLine == 1) then { 
+		_menu set [1, [_menuLine, "LABEL", "<t align='center'>NO WEAPONS</t>"]];
+		_menu set [5, [_menuLine + 1, "LABEL", ""]];
+	};
+	_menu call dzn_fnc_ShowAdvDialog;
+};
+
+dzn_fnc_addMagazines = {
+	private _priMagId = 0;
+	private _secMagId = if (addMagazineTypes select 0) then { 2 } else { 0 };
+	private _handMagId = if (addMagazineTypes select 0 && addMagazineTypes select 1) then { 4 } else { 2 };
+	
+	private _id = 0;
+	if (addMagazineTypes select 0) then {		
+		private _mag = ((_this select _id) select 2) select ((_this select _id) select 0);
+		private _count = ((_this select (_id + 1)) select 0);
+		
+		player addMagazines [_mag, _count];
+		_id = _id + 2;
+	};
+	
+	if (addMagazineTypes select 1) then {		
+		private _mag = ((_this select _id) select 2) select ((_this select _id) select 0);
+		private _count = ((_this select (_id+1)) select 0);
+		
+		player addMagazines [_mag, _count];
+		_id = _id + 2;
+	};
+	
+	if (addMagazineTypes select 2) then {		
+		private _mag = ((_this select _id) select 2) select ((_this select _id) select 0);
+		private _count = ((_this select (_id+1)) select 0);
+		
+		player addMagazines [_mag, _count];
+	};
+	
+	[
+		parseText "<t shadow='2' align='center' font='PuristaBold' size='1.25'>MAGAZINES ADDED</t>"
+		, [.5,.85,1,1], nil, 7, 0.2, 0 
+	] spawn BIS_fnc_textTiles;
+};
+
+
 dzn_fnc_createTarget = {	
 	private _changeLocation 	= (_this select 0) select 0;
 	private _tgtType 		= ((_this select 1) select 2) select ((_this select 1) select 0);
@@ -90,6 +215,7 @@ dzn_fnc_createTarget = {
 		firingDir = _newPos select 1;		
 	} else {
 		firingPos = getPosASL player;
+		firingDir = getDir player;
 	};
 	
 	tgtPos = [firingPos, firingDir, _range] call dzn_fnc_getPosOnGivenDir;
@@ -169,7 +295,6 @@ dzn_fnc_createTarget = {
 		player setDir firingDir;
 	};
 	
-	private _type = 
 	hint format [
 		"New target generated!\nType: %1\nRange: %2"
 		, switch (_tgtType) do {
@@ -365,7 +490,24 @@ allowedPlayerVehicleNames = [];
 };
 
 
-[] spawn {
+[] spawn {	
+	player createDiaryRecord [
+		"Diary"
+		,[
+			"Hotkeys"
+			, "F1 : New target menu (to select new infantry/vehicle target)
+			<br />F2 : Open Virtual Arsenal
+			<br />F3 : Mark Up target with 3d marker
+			<br />F4 : Spawn vehicle for player (optional AI driver is available)
+			<br />F5 : Delete all targets
+			<br />F6 : Add Magazines menu (to re-add some weapon magazines)
+			<br />Ctrl + F : Load single round to current weapon (useful to practice with bolt-action rifles)"
+		]
+	];
+	
+	sleep 2;
+	waitUntil { !isNull  (findDisplay 46) };
+	
 	bis_fnc_arsenal_fullArsenal = true;
 	["dzn_tgtMarkUp", "onEachFrame", { call dzn_fnc_showMark }] call BIS_fnc_addStackedEventHandler;	
 	
@@ -393,6 +535,14 @@ allowedPlayerVehicleNames = [];
 	player addAction [
 		"<t color='#484f42'>(F5) Delete all targets</t>"
 		, { [] spawn dzn_fnc_removeTargets; }
+	];
+	player addAction [
+		"<t color='#f7a413'>(F6) Add Magazines</t>"
+		, { [] spawn dzn_fnc_showAddMagazines; }
+	];
+	player addAction [
+		"<t color='#126387'>(Ctrl+F) Single round</t>"
+		, { [] spawn dzn_fnc_loadSingleRound; }
 	];
 	player addAction [
 		"<t color='#878787'>Re-add hotkeys</t>"

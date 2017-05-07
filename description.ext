@@ -6,7 +6,7 @@
 briefing = 0;
 
 author = "10Dozen"; // Author
-onLoadName = "tS Target Practice (1B)"; // Mission name (temporary solution; actual name set in editor will be used later in the alpha)
+onLoadName = "tS Target Practice (1C)"; // Mission name (temporary solution; actual name set in editor will be used later in the alpha)
 onLoadMission = "GOOD DRY FIRE = GOOD LIVE FIRE"; // Description
 overviewText  = "Tactical Shift's Target Practice. Increase your firing skills with infantry weapons and vehicle's arnament."
 overviewPicture  = "overview.jpg";

@@ -13,9 +13,9 @@ class EditorData
 	class Camera
 	{
 		pos[]={11748.357,33.544689,12014.21};
-		dir[]={0.29432976,-0.56415647,0.77144545};
-		up[]={0.20110317,0.82566679,0.52709436};
-		aside[]={0.93432146,1.3971003e-006,-0.35647589};
+		dir[]={0.40815815,-0.60762,0.68135643};
+		up[]={0.3122496,0.7942239,0.52125067};
+		aside[]={0.85787141,1.5143742e-006,-0.51390183};
 	};
 };
 binarizationWanted=0;
@@ -75,7 +75,7 @@ class Mission
 {
 	class Intel
 	{
-		briefingName="tS Target Practice (1B)";
+		briefingName="tS Target Practice (1C)";
 		startWeather=0.29999998;
 		startWind=0.099999994;
 		startWaves=0.099999994;
